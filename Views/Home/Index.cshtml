@@ -1,0 +1,91 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ApiClient</title>
+</head>
+<body>
+    <div>
+        <h2>All Person</h2>
+        <ul id="persons" />
+    </div>
+    <br />
+    <form id="form2">
+      
+            <h2>Add Person</h2>
+
+        <div>
+            <input type="text" id="addId" size="5" />
+            <input type="text" id="addName" size="10"  />
+        </div>
+        <div>
+            <input type="submit" value="Submit" />
+        </div>
+    </form>
+
+
+    <br />
+    <div>
+        <h2>Search by ID</h2>
+        <input type="text" id="personId" size="5" />
+        <input type="button" value="Search" onclick="find();" />
+        <p id="ShowPersons" />
+    </div>
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
+    <script>
+    var uri = 'api/Values';
+
+    $(document).ready(function () {
+        $('#addId').text = '';
+        $('#addName').text = '';
+      // Send an AJAX request
+      $.getJSON(uri)
+          .done(function (data) {
+            // On success, 'data' contains a list of persons.
+            $.each(data, function (key, item) {
+              // Add a list item for the ShowPersons.
+              $('<li>', { text: formatItem(item) }).appendTo($('#persons'));
+            });
+          });
+    });
+
+    function formatItem(item) {
+      return item.Id + ' : ' + item.Name;
+    }
+
+    function find() {
+        var id = $('#personId').val();
+      $.getJSON(uri + '/' + id)
+          .done(function (data) {
+            $('#ShowPersons').text(formatItem(data));
+          })
+          .fail(function (jqXHR, textStatus, err) {
+            $('#ShowPersons').text('Error: ' + err);
+          });
+    }
+
+    $('#form2').submit(function () {
+       
+        /*var finalStr = "[{ 'Id': '" + $('#addId').val() + "','Name':'" + $('#addName').val() + "'}]";*/
+        var finalStr = '{ "Id":"' + $('#addId').val() + '","Name":"' + $('#addName').val() + '"}';
+
+        var jqxhr = $.post(uri, { "": finalStr })
+            .success(function () {
+                var loc = jqxhr.getResponseHeader('Location');
+                var a = $('<a/>', { href: loc, text: loc });
+                $('#message').html(a);
+            })
+            .error(function () {
+                $('#message').html("Error posting the update.");
+            });
+        return false;
+    });
+    </script>
+</body>
+</html>
